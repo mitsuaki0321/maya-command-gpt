@@ -37,6 +37,8 @@ class ConfigLoader:
         # Get config file path
         package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         config_file_path = os.path.join(package_dir, config_file)
+        if not os.path.exists(config_file_path):
+            raise FileNotFoundError(f"Missing config file: {config_file_path}")
 
         # Read config file
         self.config = configparser.ConfigParser()
@@ -69,9 +71,9 @@ class ConfigLoader:
         """Get the server side url."""
         return self.get('server_settings', 'url')
 
-    def get_port_number(self) -> int:
+    def get_port_number(self) -> str:
         """Get the port number for conncting maya."""
-        return self.get('server_settings', 'port')
+        return self.get('server_settings', 'maya_port')
 
     def get_python_dir(self) -> str:
         """Get the directory for output python file."""

@@ -28,6 +28,8 @@ def open_port():
     port_number = config_operation.get_port_number()
     cmds.commandPort(name=f':{port_number}', sourceType='python')
 
+    print(f'Open port: {port_number}')
+
 
 def close_port():
     """Close port.
@@ -38,3 +40,5 @@ def close_port():
     """
     port_number = config_operation.get_port_number()
     cmds.commandPort(name=f':{port_number}', close=True)
+
+    print(f'Close port: {port_number}')
