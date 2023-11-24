@@ -2,6 +2,9 @@
 This module is a module for executing Maya commands.
 After execution, it sends a webhook notification to the FastAPI server.
 
+Note:
+    This module consists of modules that can be imported in Maya.
+
 Classes:
     CommandResponse: Maya command response.
 

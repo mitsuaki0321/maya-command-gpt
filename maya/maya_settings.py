@@ -4,6 +4,9 @@ Maya settings.
 Overview:
     This module is used in maya.
 
+Note:
+    This module consists of modules that can be imported in Maya.
+
 Functions:
     open_port: Open port.
     close_port: Close port.
