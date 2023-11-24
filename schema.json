@@ -1,0 +1,74 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Maya Command Test API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "URL to the server"
+        }
+    ],
+    "paths": {
+        "/maya/sendCommand": {
+            "post": {
+                "summary": "Send a command to Maya",
+                "operationId": "sendCommandToMaya",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "command": {
+                                        "type": "string",
+                                        "description": "Command in Python to be executed in Maya"
+                                    },
+                                    "file_name": {
+                                        "type": "string",
+                                        "description": "File name without extension"
+                                    }
+                                },
+                                "required": [
+                                    "command",
+                                    "file_name"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Status": {
+                                            "type": "string",
+                                            "description": "Status of the operation in Maya",
+                                            "enum": [
+                                                "Success",
+                                                "Failed"
+                                            ]
+                                        },
+                                        "Result": {
+                                            "type": "string",
+                                            "description": "Return value from Maya"
+                                        },
+                                        "ErrorLog": {
+                                            "type": "string",
+                                            "description": "Error log if the operation failed in Maya"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
