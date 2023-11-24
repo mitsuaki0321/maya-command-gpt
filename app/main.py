@@ -35,7 +35,7 @@ from logging import getLogger
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 
-from .pipe import get_json_data, send_python_command
+from . import pipe
 
 logger = getLogger(__name__)
 
@@ -92,7 +92,7 @@ async def send_command(command: Command) -> dict:
     """
     try:
         # Send command to Maya
-        send_python_command(command.command, command.file_name)
+        pipe.send_python_command(command.command, command.file_name)
 
         logger.debug(f"Apply command: {command.command}")
 
@@ -100,7 +100,7 @@ async def send_command(command: Command) -> dict:
         await notification_event.wait()
 
         # Get return value from Maya
-        data = get_json_data(command.file_name)
+        data = pipe.get_json_data(command.file_name)
 
         logger.debug(f"Return value: {data}")
 
