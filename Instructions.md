@@ -24,9 +24,9 @@ This section describes the specification of the defined Actions.
 
 ### Action's parameter
 
-url: https://mayacommandgpt.ngrok.app
-paths: /maya/sendCommand
-operationID：sendCommandToMaya
+url: 
+paths: /maya/sendCommand  
+operationID：sendCommandToMaya  
 
 ### Overview
 This Actions is used to request commands to Autodesk Maya and, if necessary, retrieve responses. It is synonymous with "sending a command".
