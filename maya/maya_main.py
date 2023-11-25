@@ -5,6 +5,9 @@ After execution, it sends a webhook notification to the FastAPI server.
 Note:
     This module consists of modules that can be imported in Maya.
 
+    If the processing in Maya takes more than the number of seconds
+    specified by the TIMEOUT variable after execution, it returns a timeout error.
+
 Classes:
     CommandResponse: Maya command response.
 
@@ -14,6 +17,7 @@ Functions:
 
 """
 
+import concurrent.futures
 import importlib.util
 import json
 import os
@@ -21,6 +25,9 @@ import urllib.request
 from typing import Any
 
 from ..app import config_operation
+
+# Timeout settings
+TIME_OUT = 15
 
 
 class CommandResponse:
@@ -83,7 +90,6 @@ def execute_command(file_path: str) -> None:
     # Make json path
     result_dir = config_operation.get_result_dir()
     json_file = os.path.join(result_dir, f'{file_name}.json')
-    print(json_file)
 
     # Execute and save output
     command_response = CommandResponse()
@@ -95,17 +101,26 @@ def execute_command(file_path: str) -> None:
         if not hasattr(module, "main"):
             raise AttributeError("main() is not defined in the command file.")
 
-        result = module.main()
+        # Timeout settings
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(module.main)
+            result = future.result(timeout=TIME_OUT)
 
-        if result:
-            command_response.update_result(result)
+            if result:
+                # Get result
+                command_response.update_result(result)
 
-        with open(json_file, "w") as file:
-            json.dump(command_response.to_dict(), file, indent=4)
-
+    except concurrent.futures.TimeoutError:
+        command_response.update_error_log(
+            f"TimeoutError: The command took more than {TIME_OUT} seconds to execute, resulting in a timeout error."
+        )
+        command_response.set_status(0)
     except Exception as e:
+        # If error from Maya command, get error log
         command_response.update_error_log(str(e))
         command_response.set_status(0)
+    finally:
+        # Save json file
         with open(json_file, "w") as file:
             json.dump(command_response.to_dict(), file, indent=4)
 

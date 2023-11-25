@@ -17,7 +17,7 @@ import shutil
 import socket
 from logging import getLogger
 
-from mayacommandgpt.app import config_operation
+from . import config_operation
 
 logger = getLogger(__name__)
 
