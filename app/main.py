@@ -68,14 +68,13 @@ async def maya_webhook(request: Request):
 
     """
     webhook_data = await request.json()
-    print("Received webhook from Maya:", webhook_data)
     notification_event.set()
 
     return {"status": "received", "data": webhook_data}
 
 
 @app.post("/maya/sendCommand")
-async def send_command(command: Command) -> dict:
+async def send_python_command(command: Command) -> dict:
     """Receives a command, executes it in Maya, and sends back the return value.
 
     Args:

@@ -89,7 +89,7 @@ def get_url() -> str:
     return ConfigLoader().get_url()
 
 
-def get_port_number() -> int:
+def get_port_number() -> str:
     """Get the port number for conncting maya."""
     return ConfigLoader().get_port_number()
 

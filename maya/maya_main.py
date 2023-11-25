@@ -83,6 +83,7 @@ def execute_command(file_path: str) -> None:
     # Make json path
     result_dir = config_operation.get_result_dir()
     json_file = os.path.join(result_dir, f'{file_name}.json')
+    print(json_file)
 
     # Execute and save output
     command_response = CommandResponse()
@@ -91,7 +92,7 @@ def execute_command(file_path: str) -> None:
         spec = importlib.util.spec_from_file_location(file_name, file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        if hasattr(module, "main"):
+        if not hasattr(module, "main"):
             raise AttributeError("main() is not defined in the command file.")
 
         result = module.main()

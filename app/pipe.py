@@ -17,7 +17,7 @@ import shutil
 import socket
 from logging import getLogger
 
-from . import config_operation
+from mayacommandgpt.app import config_operation
 
 logger = getLogger(__name__)
 
@@ -40,7 +40,8 @@ def send_python_command(command: str, file_name: str) -> None:
     file_path = _create_command_file(command, file_name).replace('\\', '/')
 
     # Set send command
-    package_name = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
+    package_name = os.path.basename(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
     send_command = (
         f"import {package_name}.maya.maya_main; {package_name}.maya.maya_main.execute_command('{file_path}')\n"
     )
@@ -49,7 +50,7 @@ def send_python_command(command: str, file_name: str) -> None:
 
     try:
         # Connect to Maya
-        client.connect(("localhost", port_number))
+        client.connect(("localhost", int(port_number)))
         client.send(send_command.encode())
 
         logger.debug(f"Send command: {send_command}")
@@ -137,7 +138,7 @@ def _make_backup_file(file_name: str, tail: str = 'py') -> str:
     os.makedirs(folder_path, exist_ok=True)
 
     # Create backup file
-    now = datetime.now()
+    now = datetime.datetime.now()
     timestamp = now.strftime("%Y%m%d%H%M%S")
     backup_file_path = os.path.join(folder_path, f'{file_name}_{timestamp}.{tail}')
 
