@@ -9,7 +9,6 @@ Note:
     specified by the TIMEOUT variable after execution, it returns a timeout error.
 
 Classes:
-    CommandResponse: Maya command response.
 
 Functions:
     execute_command: Execute a Python file and save its return value to a JSON file.
@@ -19,6 +18,7 @@ Functions:
 import concurrent.futures
 import importlib.util
 import json
+import traceback
 from typing import Any
 
 from ..app import file_operation
@@ -28,8 +28,6 @@ TIME_OUT = 15
 
 
 class CommandResponse:
-    """Maya command response."""
-
     def __init__(self):
         self.__status = 1
         self.__result = None
@@ -72,56 +70,44 @@ def execute_command(file_name: str) -> None:
     """Execute a Python file and save its return value to a JSON file.
 
     Args:
-        file_name (str): The name of the command file.
+        file_name (str): The name of the Python file to execute.
 
     Note:
-        This function is called by the Maya command.
-        If the Maya command completes successfully, put the return value in Result and save it to a JSON file.
         If it fails, put the error log in ErrorLog and save it to a JSON file.
 
     Raises:
-        AttributeError: main() is not defined in the command file.
-        Exception: Other exceptions. This exception is often raised when a Maya command fails.
+        AttributeError: The module does not have a main function.
+        TimeoutError: Maya command execution timed out of {TIME_OUT} seconds.
+        Exception: Maya function error or other error.
 
     """
-    print('Execute command')
     # Make json path
     json_file = file_operation.get_result_file(file_name)
 
     # Execute and save output
     command_response = CommandResponse()
 
-    print('Execute command start')
     try:
         python_file_path = file_operation.get_python_file(file_name)
         spec = importlib.util.spec_from_file_location(file_name, python_file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         if not hasattr(module, "main"):
-            raise AttributeError("main() is not defined in the command file.")
+            raise AttributeError("The module does not have a main function.")
 
-        result = module.main()
-        if result:
-            # Get result
-            command_response.update_result(result)
+        # Timeout settings
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(module.main)
+            result = future.result(timeout=TIME_OUT)
 
-    #     # Timeout settings
-    #     with concurrent.futures.ThreadPoolExecutor() as executor:
-    #         future = executor.submit(module.main)
-    #         result = future.result(timeout=TIME_OUT)
-
-    #         if result:
-    #             # Get result
-    #             command_response.update_result(result)
-
-    # except concurrent.futures.TimeoutError:
-    #     command_response.update_error_log(
-    #         f"TimeoutError: The command took more than {TIME_OUT} seconds to execute, resulting in a timeout error."
-    #     )
-    #     command_response.set_status(0)
+            if result:
+                # Get result
+                command_response.update_result(result)
+    except concurrent.futures.TimeoutError:
+        command_response.update_error_log(f'TimeoutError: Maya command execution timed out of {TIME_OUT} seconds.')
+        command_response.set_status(0)
     except Exception as e:
-        # If error from Maya command, get error log
-        command_response.update_error_log(str(e))
+        command_response.update_error_log(str(e) + "\n" + traceback.format_exc())
         command_response.set_status(0)
     finally:
         # Save json file

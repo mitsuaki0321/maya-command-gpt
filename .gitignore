@@ -161,3 +161,4 @@ cython_debug/
 
 # Add ignore my files
 test_app.py
+memo.md
