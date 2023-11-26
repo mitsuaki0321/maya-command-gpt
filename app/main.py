@@ -30,8 +30,6 @@ Functions:
 import asyncio
 import os
 import socket
-import time
-import traceback
 from logging import getLogger
 
 from fastapi import FastAPI, HTTPException

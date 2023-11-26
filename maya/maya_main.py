@@ -15,7 +15,7 @@ Functions:
     send_webhook_notification: Send a webhook notification to the FastAPI server.
 
 """
-import concurrent.futures
+
 import importlib.util
 import json
 import traceback
@@ -28,6 +28,8 @@ TIME_OUT = 15
 
 
 class CommandResponse:
+    """Command response model."""
+
     def __init__(self):
         self.__status = 1
         self.__result = None
@@ -77,7 +79,6 @@ def execute_command(file_name: str) -> None:
 
     Raises:
         AttributeError: The module does not have a main function.
-        TimeoutError: Maya command execution timed out of {TIME_OUT} seconds.
         Exception: Maya function error or other error.
 
     """
@@ -96,16 +97,9 @@ def execute_command(file_name: str) -> None:
             raise AttributeError("The module does not have a main function.")
 
         # Timeout settings
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(module.main)
-            result = future.result(timeout=TIME_OUT)
-
-            if result:
-                # Get result
-                command_response.update_result(result)
-    except concurrent.futures.TimeoutError:
-        command_response.update_error_log(f'TimeoutError: Maya command execution timed out of {TIME_OUT} seconds.')
-        command_response.set_status(0)
+        result = module.main()
+        if result:
+            command_response.update_result(result)
     except Exception as e:
         command_response.update_error_log(str(e) + "\n" + traceback.format_exc())
         command_response.set_status(0)
