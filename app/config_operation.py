@@ -67,10 +67,6 @@ class ConfigLoader:
 
         return self.config.get(section, option)
 
-    def get_url(self) -> str:
-        """Get the server side url."""
-        return self.get('server_settings', 'url')
-
     def get_port_number(self) -> str:
         """Get the port number for conncting maya."""
         return self.get('server_settings', 'maya_port')
@@ -82,11 +78,6 @@ class ConfigLoader:
     def get_result_dir(self) -> str:
         """Get the directory for output result file."""
         return self.get('directory', 'result')
-
-
-def get_url() -> str:
-    """Get the server side url."""
-    return ConfigLoader().get_url()
 
 
 def get_port_number() -> str:

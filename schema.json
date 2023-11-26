@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "URL to the server"
+            "url": "Address of the server"
         }
     ],
     "paths": {

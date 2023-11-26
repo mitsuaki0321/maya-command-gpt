@@ -24,7 +24,7 @@ This section describes the specification of the defined Actions.
 
 ### Action's parameter
 
-url: 
+url:  
 paths: /maya/sendCommand  
 operationID：sendCommandToMaya  
 

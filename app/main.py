@@ -16,8 +16,8 @@ Usage:
     If you want to send commands from GPTs, you need to expose the URL instead of using localhost.
     For this test, I used ngrok to expose the URL and perform the test.
 
-    finnaly:
-    Close port in Maya: ( finally )
+    finally:
+    Close port in Maya:
         import mayacommandgpt.maya_settings
         mayacommandgpt.maya_settings.close_port()
 
@@ -27,20 +27,21 @@ Functions:
     send_command: Receives a command, executes it in Maya, and sends back the return value.
 
 """
-
 import asyncio
+import os
 import socket
+import time
+import traceback
 from logging import getLogger
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from . import pipe
+from . import file_operation, pipe
 
 logger = getLogger(__name__)
 
 app = FastAPI()
-notification_event = asyncio.Event()
 
 
 class Command(BaseModel):
@@ -48,7 +49,6 @@ class Command(BaseModel):
 
     Note:
         command: Maya python command.
-        file_name: The name of the command file without tail.
 
     """
 
@@ -56,55 +56,43 @@ class Command(BaseModel):
     file_name: str
 
 
-@app.post("/maya/webhook")
-async def maya_webhook(request: Request):
-    """Receives a webhook from Maya.
-
-    Args:
-        request (Request): Request model.
-
-    Returns:
-        dict: Webhook data.
-
-    """
-    webhook_data = await request.json()
-    notification_event.set()
-
-    return {"status": "received", "data": webhook_data}
-
-
 @app.post("/maya/sendCommand")
 async def send_python_command(command: Command) -> dict:
-    """Receives a command, executes it in Maya, and sends back the return value.
+    """Main process. Sends a command to Maya and returns the result.
 
     Args:
         command (Command): Command model.
 
     Raises:
-        HTTPException: Socket error occurred.
-                       Maybe Maya is not running or the port is not open.
+        HTTPException: If an error occurs, an exception occurs.
+              the error message will be "OSError occurred: [error details]".
+
+            - If a socket.error occurs (e.g., when Maya is not running or the port is not open),
+              the error message will be "Socket error occurred: [error details]".
+
+            - If any other Exception occurs, the error message will be "Error occurred: [error details]".
 
     Returns:
         dict: Return value from Maya.
 
-
     """
     try:
+        # Delete result file
+        file_operation.delete_result_file(command.file_name)
+
         # Send command to Maya
         pipe.send_python_command(command.command, command.file_name)
 
-        logger.debug(f"Apply command: {command.command}")
-
-        # Wait for notification from Maya
-        await notification_event.wait()
+        # Wait for Maya to finish processing
+        result_file = file_operation.get_result_file(command.file_name)
+        while not os.path.exists(result_file):
+            await asyncio.sleep(1.0)
 
         # Get return value from Maya
         data = pipe.get_json_data(command.file_name)
 
-        logger.debug(f"Return value: {data}")
-
-        # Reset notification event
-        notification_event.clear()
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"OSError occurred: {e}")
     except socket.error as e:
         raise HTTPException(status_code=500, detail=f"Socket error occurred: {e}")
     except Exception as e:
