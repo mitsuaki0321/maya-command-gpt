@@ -110,7 +110,7 @@ def create_command_file(command: str, file_name: str, tail: str = 'py') -> str:
     logger.debug(f'Make backup file: {back_up_file}')
 
     # Write command
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding='utf-8') as file:
         file.write(command)
 
     logger.debug(f'Made command file: {file_path}')
