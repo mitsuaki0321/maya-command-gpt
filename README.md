@@ -34,9 +34,6 @@ pip install -r requirements.txt
 まず、`/ config.ini` を設定します。  
 値はそれぞれ以下のような意味があります。
 
-`url`  
-GPTs と通信するための URL です。
-
 `maya_port`  
 Maya と通信するためのポート番号です。  
 デフォルトは、7001 番を設定しています。
